@@ -45,6 +45,6 @@ jobs:
         buildah run "${builder}" sh -c 'apt clean'
         buildah copy "${builder}" './build.sh' './ffmpeg_reverse_banner.patch' '/workspace'
 
-        buildah run  -v $(pwd):/workspace "${builder}" sh -c 'build.sh'
+        buildah run "${builder}" sh -c './build.sh'
 
         #buildah rm "${builder}"
