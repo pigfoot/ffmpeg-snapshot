@@ -1,0 +1,15 @@
+name: cicd
+
+on:
+  schedule:
+    - cron: "50 07 1 * *"
+
+  workflow_dispatch:
+
+
+jobs:
+  build-omission-pattern-tool:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean up workspace
+        uses: AutoModality/action-clean@v1
