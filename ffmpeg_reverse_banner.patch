@@ -1,0 +1,20 @@
+--- fftools/cmdutils.c.BAK	2022-07-12 01:10:04.177160396 +0000
++++ fftools/cmdutils.c	2022-07-12 01:10:39.132655551 +0000
+@@ -59,7 +59,7 @@
+ AVDictionary *swr_opts;
+ AVDictionary *format_opts, *codec_opts;
+ 
+-int hide_banner = 0;
++int hide_banner = 1;
+ 
+ void uninit_opts(void)
+ {
+@@ -494,7 +494,7 @@
+     freeenv_utf8(env);
+     idx = locate_option(argc, argv, options, "hide_banner");
+     if (idx)
+-        hide_banner = 1;
++        hide_banner = 0;
+ }
+ 
+ static const AVOption *opt_find(void *obj, const char *name, const char *unit,

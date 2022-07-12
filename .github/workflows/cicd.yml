@@ -6,10 +6,42 @@ on:
 
   workflow_dispatch:
 
-
 jobs:
-  build-omission-pattern-tool:
+  build-static-ffmpeg:
     runs-on: ubuntu-latest
     steps:
-      - name: Clean up workspace
-        uses: AutoModality/action-clean@v1
+
+    - name: Clean up workspace
+      uses: AutoModality/action-clean@v1
+
+    - name: install podman/buildah
+      env:
+        STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
+      run: |
+        set -ex
+        if [[ ! -x "$(command -v podman)" || ! -x "$(command -v buildah)" ]]; then
+          . /etc/os-release
+          echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${ID^}_${VERSION_ID}/ /" \
+            | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+          curl -fsSL "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${ID^}_${VERSION_ID}/Release.key" \
+            | sudo apt-key add - > /dev/null 2>&1
+          sudo apt update -qq && sudo apt -y install podman buildah
+        fi
+        # smoke tests
+        podman --version && buildah --version
+
+    - name: build static ffmpeg
+      run: |
+        set -ex
+        builder=$(buildah from "docker.io/library/ubuntu:latest")
+        buildah config --workingdir '/workspace' "${builder}"
+        buildah run "${builder}" sh -c 'apt update -qq && apt upgrade -qq -y'
+        buildah run "${builder}" sh -c 'apt install -y build-essential cmake curl git \
+          libfdk-aac-dev libgmp-dev libmp3lame-dev libopus-dev libssl-dev libswscale-dev libtwolame-dev libvo-amrwbenc-dev \
+          libvorbis-dev libwebp-dev libx264-dev libz-dev libass-dev meson nasm pkg-config yasm'
+        buildah run "${builder}" sh -c 'apt clean'
+        buildah copy "${builder}" './build.sh' './ffmpeg_reverse_banner.patch' '/workspace'
+
+        buildah run  -v $(pwd):/workspace "${builder}" sh -c 'build.sh'
+
+        #buildah rm "${builder}"
