@@ -34,6 +34,7 @@ jobs:
         podman --version && buildah --version
 
     - name: build static ffmpeg
+      id: build-static-ffmpeg
       run: |
         set -ex
         builder=$(buildah from "docker.io/library/ubuntu:latest")
@@ -48,3 +49,18 @@ jobs:
         buildah run "${builder}" sh -c './build.sh'
 
         buildah rm "${builder}"
+
+        # save ffmpeg version
+        _ver=$(./ffmpeg -version | sed -En '/^ffmpeg version/ s#.*version[[:blank:]]+([^[:blank:]]+)[[:blank:]]+.*#\1#p')
+        echo "::set-output name=FFMPEG_VER::${_ver}"
+
+    - name: Create Release
+      uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+      run: |
+        tag_name: ${{ steps.build-static-ffmpeg.outputs.FFMPEG_VER }}
+        release_name: ffmpeg snapshoot ubuntu - ${{ steps.build-static-ffmpeg.outputs.FFMPEG_VER }}
+        draft: false
+        prerelease: false
