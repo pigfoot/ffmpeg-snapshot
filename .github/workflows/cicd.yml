@@ -51,6 +51,7 @@ jobs:
         buildah rm "${builder}"
 
         # save ffmpeg version
+        ls -hla
         _ver=$(./ffmpeg -version | sed -En '/^ffmpeg version/ s#.*version[[:blank:]]+([^[:blank:]]+)[[:blank:]]+.*#\1#p')
         echo "::set-output name=FFMPEG_VER::${_ver}"
 
