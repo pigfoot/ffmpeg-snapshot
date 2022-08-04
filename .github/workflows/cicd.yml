@@ -41,17 +41,14 @@ jobs:
         buildah config --workingdir '/workspace' "${builder}"
         buildah run "${builder}" sh -c 'apt update -qq && apt upgrade -qq -y'
         buildah run "${builder}" sh -c 'apt install -y build-essential cmake curl git \
-          libfdk-aac-dev libgmp-dev libmp3lame-dev libopus-dev libssl-dev libswscale-dev libtwolame-dev libvo-amrwbenc-dev \
-          libvorbis-dev libwebp-dev libx264-dev libz-dev libass-dev meson nasm pkg-config yasm'
+          libfdk-aac-dev libmp3lame-dev libopus-dev libssl-dev libswscale-dev \
+          libvorbis-dev libx264-dev libz-dev libass-dev \
+          meson nasm pkg-config yasm'
         buildah run "${builder}" sh -c 'apt clean'
-        buildah copy "${builder}" './build.sh' './ffmpeg_reverse_banner.patch' '/workspace'
-
-        buildah run "${builder}" sh -c './build.sh'
-
+        buildah run -v "$(pwd):/workspace" "${builder}" sh -c './build.sh'
         buildah rm "${builder}"
 
         # save ffmpeg version
-        ls -hla
         _ver=$(./ffmpeg -version | sed -En '/^ffmpeg version/ s#.*version[[:blank:]]+([^[:blank:]]+)[[:blank:]]+.*#\1#p')
         echo "::set-output name=FFMPEG_VER::${_ver}"
 
