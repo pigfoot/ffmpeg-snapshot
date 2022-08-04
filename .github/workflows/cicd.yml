@@ -47,4 +47,4 @@ jobs:
 
         buildah run "${builder}" sh -c './build.sh'
 
-        #buildah rm "${builder}"
+        buildah rm "${builder}"
